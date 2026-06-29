@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affinity Learning — EVA Analyst Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#10202b; --ink-soft:#3a4d59; --paper:#f5f1e8; --card:#ffffff;
+    --brand:#0d5c63; --brand-2:#14868f; --accent:#e0a458; --line:#dfd8c8;
+    --good:#2f7d52; --caution:#b8842a; --risk:#b34b3f;
+    --shadow:0 1px 3px rgba(16,32,43,.08),0 8px 28px rgba(16,32,43,.06);
+    --maxw:880px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--brand)}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 22px}
+
+  /* Hero */
+  header.hero{
+    background:linear-gradient(160deg,#0b3a40 0%,#0d5c63 60%,#14868f 100%);
+    color:#fff; padding:64px 0 56px; position:relative; overflow:hidden;
+  }
+  header.hero:after{
+    content:""; position:absolute; right:-120px; top:-120px; width:380px; height:380px;
+    background:radial-gradient(circle,rgba(224,164,88,.30),transparent 70%); border-radius:50%;
+  }
+  .eyebrow{
+    font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    letter-spacing:.18em; text-transform:uppercase; font-size:12.5px; font-weight:700;
+    color:var(--accent); margin:0 0 14px;
+  }
+  header.hero h1{font-size:clamp(30px,5vw,46px); line-height:1.12; margin:0 0 14px; font-weight:700}
+  header.hero p.lede{font-size:clamp(17px,2.3vw,20px); max-width:640px; margin:0; color:#e8f1f1}
+  .verdict{
+    display:inline-flex; align-items:center; gap:10px; margin-top:26px;
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25);
+    padding:10px 18px; border-radius:999px; font-family:ui-sans-serif,system-ui,sans-serif;
+    font-size:14px; font-weight:600; backdrop-filter:blur(4px);
+  }
+  .verdict .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(224,164,88,.25)}
+  .byline{
+    margin-top:28px; font-family:ui-sans-serif,system-ui,sans-serif; font-size:13.5px; color:#bfe0e1;
+    display:flex; flex-wrap:wrap; gap:6px 20px;
+  }
+
+  /* Section scaffolding */
+  main{padding:10px 0 40px}
+  section{padding:42px 0; border-bottom:1px solid var(--line)}
+  section:last-of-type{border-bottom:none}
+  h2{font-size:clamp(22px,3.2vw,29px); line-height:1.2; margin:0 0 6px; color:var(--brand)}
+  h2 .num{
+    font-family:ui-sans-serif,system-ui,sans-serif; font-size:13px; font-weight:700; color:var(--accent);
+    display:block; letter-spacing:.14em; text-transform:uppercase; margin-bottom:8px;
+  }
+  h3{font-size:19px; margin:30px 0 6px; color:var(--ink)}
+  p{margin:14px 0}
+
+  /* Executive summary callout */
+  .exec{
+    background:var(--card); border:1px solid var(--line); border-left:5px solid var(--brand-2);
+    border-radius:14px; padding:26px 28px; box-shadow:var(--shadow); margin-top:6px;
+  }
+  .reco-pill{
+    font-family:ui-sans-serif,system-ui,sans-serif; font-weight:700; font-size:13px;
+    color:#fff; background:var(--brand); padding:5px 14px; border-radius:999px; display:inline-block;
+  }
+  .takeaways{list-style:none; padding:0; margin:20px 0 0; display:grid; gap:10px}
+  .takeaways li{
+    position:relative; padding:12px 14px 12px 42px; background:var(--paper);
+    border:1px solid var(--line); border-radius:10px; font-size:15.5px;
+  }
+  .takeaways li:before{
+    content:""; position:absolute; left:16px; top:18px; width:9px; height:9px;
+    border-radius:2px; background:var(--brand-2); transform:rotate(45deg);
+  }
+
+  /* Figures */
+  figure{margin:26px 0; background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:22px 22px 16px; box-shadow:var(--shadow)}
+  figure .chart-box{position:relative; height:320px}
+  figcaption{font-family:ui-sans-serif,system-ui,sans-serif; font-size:13px; color:var(--ink-soft);
+    margin-top:12px; text-align:center}
+  .fig-title{font-family:ui-sans-serif,system-ui,sans-serif; font-weight:700; font-size:15px;
+    color:var(--ink); margin:0 0 4px; text-align:center}
+
+  /* Comparison table */
+  .table-scroll{overflow-x:auto; margin:24px 0; border-radius:14px; box-shadow:var(--shadow)}
+  table{border-collapse:collapse; width:100%; background:var(--card); font-size:14.5px; min-width:560px}
+  thead th{background:var(--brand); color:#fff; text-align:left; padding:14px 16px;
+    font-family:ui-sans-serif,system-ui,sans-serif; font-size:13.5px; letter-spacing:.02em}
+  thead th:first-child{border-top-left-radius:14px}
+  thead th:last-child{border-top-right-radius:14px}
+  tbody td{padding:13px 16px; border-top:1px solid var(--line); vertical-align:top}
+  tbody td:first-child{font-weight:600; color:var(--brand); width:24%}
+  tbody tr:nth-child(even){background:#faf7ef}
+
+  /* Assessment grid */
+  .assess{display:grid; gap:14px; margin-top:18px}
+  @media(min-width:640px){.assess{grid-template-columns:1fr 1fr}}
+  .scorecard{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px;
+    box-shadow:var(--shadow); border-top:4px solid var(--line)}
+  .scorecard.good{border-top-color:var(--good)}
+  .scorecard.caution{border-top-color:var(--caution)}
+  .scorecard.risk{border-top-color:var(--risk)}
+  .scorecard h4{margin:0 0 4px; font-size:16px}
+  .tag{font-family:ui-sans-serif,system-ui,sans-serif; font-size:11.5px; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase; padding:3px 9px; border-radius:6px; display:inline-block; margin-bottom:8px}
+  .tag.good{background:#e3f2e9; color:var(--good)}
+  .tag.caution{background:#f7eed9; color:var(--caution)}
+  .tag.risk{background:#f7e2de; color:var(--risk)}
+  .scorecard p{margin:0; font-size:14.5px; color:var(--ink-soft)}
+
+  /* Recommendation conditions */
+  .conditions{display:grid; gap:14px; margin-top:20px; counter-reset:cond}
+  .condition{background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px 18px 60px; position:relative; box-shadow:var(--shadow)}
+  .condition:before{counter-increment:cond; content:counter(cond);
+    position:absolute; left:18px; top:18px; width:30px; height:30px; border-radius:50%;
+    background:var(--brand); color:#fff; font-family:ui-sans-serif,system-ui,sans-serif;
+    font-weight:700; display:flex; align-items:center; justify-content:center; font-size:15px}
+  .condition strong{color:var(--brand)}
+
+  /* Sources */
+  details.sources{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:6px 20px; box-shadow:var(--shadow)}
+  details.sources summary{cursor:pointer; font-family:ui-sans-serif,system-ui,sans-serif; font-weight:700;
+    color:var(--brand); padding:14px 0; font-size:15px}
+  details.sources ol{font-size:13.5px; color:var(--ink-soft); line-height:1.5; margin:0 0 14px; padding-left:20px}
+  details.sources li{margin:7px 0; word-break:break-word}
+
+  footer{background:#0b3a40; color:#bfe0e1; padding:34px 0; font-family:ui-sans-serif,system-ui,sans-serif; font-size:13.5px}
+  footer .wrap{display:flex; flex-wrap:wrap; gap:8px 26px; justify-content:space-between; align-items:center}
+  footer strong{color:#fff}
+
+  .note{font-size:13.5px; color:var(--ink-soft); font-style:italic}
+  blockquote{margin:22px 0; padding:14px 20px; border-left:4px solid var(--accent);
+    background:#faf7ef; border-radius:0 10px 10px 0; font-size:15.5px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Educational Venture Analyst Report &nbsp;·&nbsp; ETEC-522 A1</p>
+    <h1>Affinity Learning: A Niche Bet on Virtual Work-Integrated Learning</h1>
+    <p class="lede">An opportunity audit of a Canadian clinical-simulation authoring platform, written to support an investment decision in a placement-starved healthcare-education market.</p>
+    <span class="verdict"><span class="dot"></span> Recommendation: Conditional Yes — fund against de-risking milestones</span>
+    <div class="byline">
+      <span>Prepared for a prospective growth investor</span>
+      <span>Lens: instructional designer &amp; learning technologist</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="summary">
+    <h2><span class="num">Executive Summary</span>The opportunity in one page</h2>
+    <div class="exec">
+      <p>Affinity Learning is a Canadian platform for building interactive, branching clinical-simulation scenarios. It targets an urgent issue for colleges and universities: healthcare programs cannot find enough clinical placements for their students, and virtual simulation has become the leading substitute. The category is growing at roughly 16 to 17 percent a year. Affinity Learning has genuine institutional validation but a tiny, capital-efficient footprint and open questions about scalability and compliance readiness.</p>
+      <p style="margin-bottom:4px"><span class="reco-pill">Investment recommendation: Conditional yes</span></p>
+      <p style="margin-top:10px">The market and the product justify a bet, but capital should be released only against milestones that close the venture's core risks.</p>
+      <ul class="takeaways">
+        <li>Strong, durable demand driver: the clinical-placement shortage is structural, not cyclical.</li>
+        <li>Real validation, thin commercialization: adoption is concentrated and revenue is small.</li>
+        <li>The product can address a much larger total addressable market without significant rework.</li>
+        <li>Founder-led dev shop: capital-efficient, but carries focus and key-person risk.</li>
+        <li>New privacy and AI laws raise the regulatory bar that Affinity Learning has not yet met.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="market-driver">
+    <h2><span class="num">Section 01 · The Driver</span>The placement shortage is an ongoing problem</h2>
+    <p>Work-integrated learning in the form of clinical placements is a required element for many post-secondary healthcare programs, but increasingly there are more students than placements. Governments are adding seats in nursing, paramedicine, and other allied-health programs, yet the staffing shortages those increases are meant to fix are also producing more students who need clinical placements to graduate than hospitals and related organizations can absorb.</p>
+    <p>Virtual simulation has become the most credible way to bridge the placement gap. It lets students practise clinical reasoning, decision-making, and rare or high-risk scenarios safely and repeatably, without a physical placement seat. That is why public funders, regulators, and institutions are actively investing in it.</p>
+    <blockquote>The obvious question to ask about any ed-tech tool is, "will this enhance students' learning?" A less obvious but equally essential question is, "will this vendor still be in business five years from now?"</blockquote>
+    <p>I am reviewing this opportunity as an instructional designer and technologist responsible for integrating educational technology into curricula. When an ed-tech tool is adopted, significant resources go into training people to use it and integrating it into existing curriculum and systems. Growth investors, like institutional customers, have much to lose if a company is not viable long-term. This report focuses on the available signals about Affinity Learning's likelihood of future success.</p>
+  </section>
+
+  <section id="venture">
+    <h2><span class="num">Section 02 · The Venture</span>A strong product from a boutique dev shop</h2>
+    <p>Affinity Learning is a web-based authoring platform for interactive scenarios, with decision branching, multiple image and video formats, a vitals monitor, AI-generated patients, scoring and reporting, and LMS integration. It is healthcare-focused and mobile-friendly, and it maintains a free, Creative Commons community library of scenarios.</p>
+    <p>The legal entity behind it is Distilled Technologies Inc., a small software studio whose portfolio also includes unrelated client builds. Affinity Learning is its flagship product rather than a standalone venture, and the team appears to be a lean, technically strong group of founders. This explains how a sub-million-dollar product survives without venture funding: it is one revenue stream alongside other consulting work. It also flags the central operating risk, namely founder focus and key-person dependency, with no visible dedicated sales, marketing, or customer-success function.</p>
+
+    <h3>Market penetration</h3>
+    <p>Affinity Learning is best known through Virtu-WIL, a pan-Canadian program funded by the federal government that has reached more than 10,000 students across 50-plus institutions. An important caveat: those figures belong to the whole program, which was built across seven simulation platforms, and the content is distributed free under Creative Commons. The marquee reach therefore reflects a grant-funded channel, not recurring subscription revenue. Affinity Learning's homepage names roughly a dozen clients, concentrated in Canadian post-secondary and healthcare organizations.</p>
+
+    <h3>The pricing ceiling</h3>
+    <p>Affinity Learning prices per author, not per learner, with students unlimited. Current enterprise quotes are $5,500 a year for five editing licences and $7,960 for ten, plus a flat $1,200 LMS-integration fee. This is excellent for adoption, but it caps revenue: an institution with thousands of students may buy only a handful of editing licences. At an effective ACV of roughly $7,000 to $10,000, reaching even $5 million in recurring revenue implies several hundred paying institutions, a heavy lift for the current team.</p>
+
+    <figure>
+      <p class="fig-title">The revenue math: per-author pricing caps account value</p>
+      <div class="chart-box"><canvas id="pricingChart"></canvas></div>
+      <figcaption>Annual contract value by licence tier versus the ~$5M recurring-revenue target. Reaching scale requires several hundred paying institutions.</figcaption>
+    </figure>
+  </section>
+
+  <section id="market-size">
+    <h2><span class="num">Section 03 · The Market</span>A small software market doubling by 2030</h2>
+    <p>The addressable market is medical simulation <em>software</em>, not the broader simulation market that is mostly physical manikins and hardware. That software market is on the order of $210 million in 2025 and is forecast to roughly double to about $460 million by 2030, a compound growth rate near 17 percent. The fastest-growing segments, web-based and virtual-patient simulation, are precisely Affinity Learning's focus, pushed by the same placement shortage that anchors the investment thesis.</p>
+
+    <figure>
+      <p class="fig-title">Medical simulation software market, 2025–2030</p>
+      <div class="chart-box"><canvas id="marketChart"></canvas></div>
+      <figcaption>Source: MarketsandMarkets. The software-only segment roughly doubles by 2030 at a ~17% CAGR.</figcaption>
+    </figure>
+
+    <p>Affinity Learning currently captures well under one percent of even this software-only market, leaving substantial room for growth but requiring a successful go-to-market strategy to claim it.</p>
+    <p>There is also an expansion opportunity: the authoring engine is not inherently healthcare-only. Given the strengths of its existing functionality, it would not require significant upgrades to extend into other regulated or vocational fields and into the far larger general scenario-authoring market. Expanding to serve a broader range of customers, rather than the current addressable market, is the real growth opportunity for investors.</p>
+  </section>
+
+  <section id="competitive">
+    <h2><span class="num">Section 04 · Competitive Landscape</span>Affinity Learning vs. Storyline in a new regulatory environment</h2>
+    <p>The natural benchmark is Articulate Storyline, the dominant authoring incumbent. On pedagogy and fit, Affinity Learning wins for clinical education: native branching simulation, a vitals monitor, 360-degree media, and learner-facing AI that a general authoring tool does not provide. On stability and ecosystem, Storyline wins on maturity, scale, and longevity. Until recently, that was the entire trade-off.</p>
+    <p>Ontario's new Enhancing Digital Security and Trust Act (EDSTA) adds a third consideration, governance and compliance, where Storyline is clearly stronger. The updated Freedom of Information and Protection of Privacy Act (FIPPA), which now binds Ontario colleges and universities, requires a privacy impact assessment before adopting a new system, reasonable safeguards, mandatory breach reporting, and annual reporting. EDSTA adds AI-accountability, transparency, and human-oversight duties whenever a public institution deploys an AI system.</p>
+    <p>These requirements are not unique to Ontario. The regulatory landscape appears to be converging, with similar legislation in place or under consideration in Quebec, Alberta, British Columbia, Saskatchewan, and Nova Scotia. Internationally, the EU AI Act came into effect in 2026. The practical implication is that the compliance bar facing a vendor like Affinity Learning will rise across jurisdictions over the life of an investment. This makes its current gap a liability and the achievement of compliance a potential moat.</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Dimension</th><th>Affinity Learning</th><th>Articulate Storyline</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Pedagogical fit</td><td>Purpose-built clinical simulation; branching, vitals, AI patients</td><td>General authoring; simulation possible but not native</td></tr>
+          <tr><td>Data custody</td><td>Cloud SaaS holds student data on vendor and subprocessor servers</td><td>Self-hosted SCORM/xAPI on the institution's own LMS</td></tr>
+          <tr><td>Security certifications</td><td>None published</td><td>SOC 2 Type II, ISO 27001/27701, FedRAMP</td></tr>
+          <tr><td>AI &amp; privacy exposure</td><td>AI-forward; uses a US AI provider to analyze learner voice; cross-border data</td><td>Mostly static delivery; AI is author-side with formal AI governance</td></tr>
+          <tr><td>Vendor durability</td><td>Small studio, concentrated revenue</td><td>Established, well-capitalized</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The effect is that adopting Affinity Learning now triggers a heavier compliance load for the institution and greater breach-and-AI-governance exposure, from a vendor that does not yet publish the certifications, data-processing agreements, and AI-accountability documentation the law requires. That compounds the viability concern: Affinity Learning is not only a "might disappear" risk but also a "harder to clear through procurement" risk.</p>
+    <p class="note">Counterpoint: Affinity Learning is a Canadian company that could offer a compliant agreement or domestic hosting on an enterprise deal. Ontario law does not mandate Canadian data residency, so cross-border processing is currently a risk factor, not a disqualifier. And none of this erases Affinity Learning's pedagogical edge, which Storyline cannot natively match.</p>
+  </section>
+
+  <section id="assessment">
+    <h2><span class="num">Section 05 · EVA Assessment</span>Strengths and concerns, scored</h2>
+    <div class="assess">
+      <div class="scorecard good">
+        <span class="tag good">Strength</span>
+        <h4>Market &amp; demand driver</h4>
+        <p>A structural placement shortage and a software market growing near 17% annually. The tailwind is real, current, and well-evidenced.</p>
+      </div>
+      <div class="scorecard good">
+        <span class="tag good">Strength</span>
+        <h4>Product &amp; pedagogical fit</h4>
+        <p>Purpose-built for clinical simulation with capabilities general tools lack, plus independent, peer-reviewed evidence of learning value via Virtu-WIL.</p>
+      </div>
+      <div class="scorecard caution">
+        <span class="tag caution">Caution</span>
+        <h4>Business model &amp; unit economics</h4>
+        <p>Per-author pricing decouples revenue from student volume. Excellent for adoption, but it caps account value and makes scale a sales-intensive grind.</p>
+      </div>
+      <div class="scorecard caution">
+        <span class="tag caution">Caution</span>
+        <h4>Team &amp; execution capacity</h4>
+        <p>Lean and technically credible, but a dev-shop structure with founder focus and key-person risk, and no visible go-to-market strategy.</p>
+      </div>
+      <div class="scorecard risk">
+        <span class="tag risk">Risk</span>
+        <h4>Customer concentration</h4>
+        <p>A single-industry product with visibility heavily dependent on one federal program whose funding ended in April 2026.</p>
+      </div>
+      <div class="scorecard risk">
+        <span class="tag risk">Risk</span>
+        <h4>Compliance readiness</h4>
+        <p>No published security certifications or AI-governance documentation as regulatory requirements increase. A barrier to institutional sales today.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="recommendation">
+    <h2><span class="num">Section 06 · Recommendation</span>Invest, with conditions</h2>
+    <p>The market and the product justify an investment. The risks are real but addressable, and they are the kind of gaps that capital and guidance can close. I recommend committing growth capital in stages, released against milestones tied to the company's de-risking plan. Each condition below is simultaneously what an investor should require and what a cautious institutional buyer would want to see before committing to the platform.</p>
+    <div class="conditions">
+      <div class="condition"><strong>Build a go-to-market strategy.</strong> Fund dedicated sales and customer success to create recurring revenue and lift seats per account.</div>
+      <div class="condition"><strong>Diversify beyond healthcare.</strong> Broaden the total addressable market by adding functionality applicable to other industries and international accounts.</div>
+      <div class="condition"><strong>Earn compliance as a moat.</strong> Achieve SOC 2 and ISO certification, offer a FIPPA-ready data-processing agreement and domestic hosting, and document AI accountability to meet existing and foreseeable regulatory requirements.</div>
+      <div class="condition"><strong>Resolve focus and key-person risk.</strong> Confirm full-time commitment to Affinity Learning and reduce single-founder dependency before scaling.</div>
+    </div>
+    <p style="margin-top:22px">Meeting these conditions moves Affinity Learning from being a niche product with regulatory red flags to being a secure, compliant e-learning authoring platform that a broad range of customers will pay for.</p>
+  </section>
+
+  <section id="sources">
+    <h2><span class="num">Appendix</span>Sources &amp; notes</h2>
+    <details class="sources">
+      <summary>Show 16 sources</summary>
+      <ol>
+        <li>Affinity Learning, platform and pricing. <a href="https://affinitylearning.ca/">affinitylearning.ca</a> · <a href="https://affinitylearning.ca/pricing">/pricing</a></li>
+        <li>Affinity Learning privacy notice (Distilled Technologies Inc.). <a href="https://app.affinitylearning.ca/privacy">app.affinitylearning.ca/privacy</a></li>
+        <li>Distilled Technologies. <a href="https://distilled.tech/">distilled.tech</a></li>
+        <li>CICan Virtu-WIL, Simulation Canada. <a href="https://simulationcanada.ca/cican/">simulationcanada.ca/cican</a></li>
+        <li>Virtual simulation in healthcare education: a pan-Canadian evaluation, PMC. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10782638/">PMC10782638</a></li>
+        <li>Medical simulation and medical simulation software markets, MarketsandMarkets. <a href="https://www.marketsandmarkets.com/Market-Reports/healthcare-medical-simulation-market-1156.html">marketsandmarkets.com</a></li>
+        <li>Ontario Enhancing Digital Security and Trust Act. <a href="https://www.ontario.ca/page/enhancing-digital-security-and-trust-act">ontario.ca</a></li>
+        <li>New FIPPA privacy requirements in effect, Hicks Morley. <a href="https://hicksmorley.com/2025/08/07/new-fippa-privacy-requirements-take-effect-for-ontario-public-sector-institutions/">hicksmorley.com</a></li>
+        <li>Information and Privacy Commissioner of Ontario, FIPPA scope. <a href="https://www.ipc.on.ca/en/fippa-mfippa-privacy-organizations">ipc.on.ca</a></li>
+        <li>Articulate Trust Center and Storyline LMS publishing. <a href="https://www.articulate.com/trust/">articulate.com/trust</a></li>
+        <li>IPC Ontario, protecting personal information in the public sector. <a href="https://www.ipc.on.ca/en/privacy-organizations/protecting-personal-information">ipc.on.ca</a></li>
+        <li>Data sovereignty in Canada by province, Capital Hill Group. <a href="https://capitalhillgroup.ca/data-sovereignty-in-canada-by-province/">capitalhillgroup.ca</a></li>
+        <li>Data Residency for Cloud Technology guideline, City of Toronto. <a href="https://www.toronto.ca/wp-content/uploads/2023/08/966e-Data-Residency-for-Cloud-Technology-Guidelinev1.0.pdf">toronto.ca (PDF)</a></li>
+        <li>CICan Virtu-WIL program page. <a href="https://www.collegesinstitutes.ca/programs/virtu-wil/">collegesinstitutes.ca</a></li>
+        <li>Government of Canada, Innovative Work-Integrated Learning Initiative. <a href="https://www.canada.ca/en/services/jobs/training/initiatives/innovative-work-integrated-learning/students.html">canada.ca</a></li>
+        <li>Fasken, cyber security, AI and privacy regulation in the Ontario public sector. <a href="https://www.fasken.com/en/knowledge/2024/08/cyber-security-artificial-intelligence-and-enhanced-privacy-regulation-in-the-ontario-public-sector">fasken.com</a></li>
+      </ol>
+    </details>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><strong>Affinity Learning — EVA Analyst Report</strong> · ETEC-522 Analyst Reports (A1)</span>
+    <span>An opportunity audit for a prospective investor · Open Educational Resource</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  if(typeof Chart==='undefined') return;
+  Chart.defaults.font.family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif";
+  Chart.defaults.color="#3a4d59";
+  const brand="#0d5c63", brand2="#14868f", accent="#e0a458", risk="#b34b3f";
+
+  // Market growth
+  new Chart(document.getElementById('marketChart'),{
+    type:'bar',
+    data:{
+      labels:['2025','2026','2027','2028','2029','2030'],
+      datasets:[{
+        label:'Market size (US$ millions)',
+        data:[210,246,288,337,394,460],
+        backgroundColor:(c)=>{ const i=c.dataIndex; return i===0?brand:(i===5?accent:brand2); },
+        borderRadius:6, maxBarThickness:64
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:(c)=>' $'+c.parsed.y+'M'}}},
+      scales:{
+        y:{beginAtZero:true, ticks:{callback:(v)=>'$'+v+'M'}, grid:{color:'#ece6d8'}},
+        x:{grid:{display:false}}
+      }
+    }
+  });
+
+  // Pricing / ACV vs target
+  new Chart(document.getElementById('pricingChart'),{
+    type:'bar',
+    data:{
+      labels:['5 licences\n+ LMS','10 licences\n+ LMS','Effective ACV\n(typical)'],
+      datasets:[{
+        label:'Annual contract value (US$)',
+        data:[6700,9160,8500],
+        backgroundColor:[brand2,brand,accent],
+        borderRadius:6, maxBarThickness:80
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:(c)=>' $'+c.parsed.x.toLocaleString()}},
+        subtitle:{display:true, text:'~$5M recurring revenue ≈ several hundred such accounts',
+          color:risk, font:{size:12, weight:'600'}, padding:{bottom:8}}
+      },
+      scales:{
+        x:{beginAtZero:true, ticks:{callback:(v)=>'$'+(v/1000)+'k'}, grid:{color:'#ece6d8'}},
+        y:{grid:{display:false}}
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>
